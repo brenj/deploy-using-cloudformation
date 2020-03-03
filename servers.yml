@@ -16,11 +16,11 @@ Resources:
                     FromPort: 80
                     ToPort: 80
                     CidrIp: 0.0.0.0/0
-                -
-                    IpProtocol: tcp
-                    FromPort: 22
-                    ToPort: 22
-                    CidrIp: 0.0.0.0/0
+                # -
+                #     IpProtocol: tcp
+                #     FromPort: 22
+                #     ToPort: 22
+                #     CidrIp: 0.0.0.0/0
             SecurityGroupEgress:
                 -
                     IpProtocol: tcp
@@ -87,7 +87,7 @@ Resources:
     ApacheServerLaunchConfig:
         Type: AWS::AutoScaling::LaunchConfiguration
         Properties:
-            KeyName: "udagram"
+            # KeyName: "udagram"
             ImageId: "ami-005bdb005fb00e791"
             UserData:
                 Fn::Base64: !Sub |
