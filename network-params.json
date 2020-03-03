@@ -12,7 +12,15 @@
         "ParameterValue":"10.0.0.0/24"
     },
     {
+        "ParameterKey":"PublicSubnet1bCIDR",
+        "ParameterValue":"10.0.2.0/24"
+    },
+    {
         "ParameterKey":"PrivateSubnet1aCIDR",
         "ParameterValue":"10.0.1.0/24"
+    },
+    {
+        "ParameterKey":"PrivateSubnet1bCIDR",
+        "ParameterValue":"10.0.3.0/24"
     }
 ]

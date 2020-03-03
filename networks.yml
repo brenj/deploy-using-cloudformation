@@ -8,7 +8,13 @@ Parameters:
     PublicSubnet1aCIDR:
         Type: String
 
+    PublicSubnet1bCIDR:
+        Type: String
+
     PrivateSubnet1aCIDR:
+        Type: String
+
+    PrivateSubnet1bCIDR:
         Type: String
 
 Resources:
@@ -36,6 +42,40 @@ Resources:
             VpcId: !Ref VPC
             InternetGatewayId: !Ref InternetGateway
 
+    NATGateway1aEIP:
+        Type: AWS::EC2::EIP
+        DependsOn: InternetGatewayAttachment
+        Properties:
+            Domain: VPC
+
+    NATGateway1bEIP:
+        Type: AWS::EC2::EIP
+        DependsOn: InternetGatewayAttachment
+        Properties:
+            Domain: VPC
+
+    NATGateway1a:
+        Type: AWS::EC2::NatGateway
+        Properties:
+            AllocationId: !GetAtt NATGateway1aEIP.AllocationId
+            SubnetId:
+                Ref: PublicSubnet1a
+            Tags:
+                -
+                    Key: "Environment"
+                    Value: !Ref EnvironmentName
+
+    NATGateway1b:
+        Type: AWS::EC2::NatGateway
+        Properties:
+            AllocationId: !GetAtt NATGateway1bEIP.AllocationId
+            SubnetId:
+                Ref: PublicSubnet1b
+            Tags:
+                -
+                    Key: "Environment"
+                    Value: !Ref EnvironmentName
+
     PublicSubnet1a:
         Type: AWS::EC2::Subnet
         Properties:
@@ -50,12 +90,40 @@ Resources:
                     Key: "Visibility"
                     Value: "Public"
 
+    PublicSubnet1b:
+        Type: AWS::EC2::Subnet
+        Properties:
+            VpcId: !Ref VPC
+            CidrBlock: !Ref PublicSubnet1bCIDR
+            AvailabilityZone: !Select [ "1", !GetAZs "" ]
+            Tags:
+                -
+                    Key: "Environment"
+                    Value: !Ref EnvironmentName
+                -
+                    Key: "Visibility"
+                    Value: "Public"
+
     PrivateSubnet1a:
         Type: AWS::EC2::Subnet
         Properties:
             VpcId: !Ref VPC
             CidrBlock: !Ref PrivateSubnet1aCIDR
             AvailabilityZone: !Select [ "0", !GetAZs "" ]
+            Tags:
+                -
+                    Key: "Environment"
+                    Value: !Ref EnvironmentName
+                -
+                    Key: "Visibility"
+                    Value: "Private"
+
+    PrivateSubnet1b:
+        Type: AWS::EC2::Subnet
+        Properties:
+            VpcId: !Ref VPC
+            CidrBlock: !Ref PrivateSubnet1bCIDR
+            AvailabilityZone: !Select [ "1", !GetAZs "" ]
             Tags:
                 -
                     Key: "Environment"
@@ -84,13 +152,19 @@ Resources:
             DestinationCidrBlock: 0.0.0.0/0
             GatewayId: !Ref InternetGateway
 
-    DefaultPublicRouteTableAssociation:
+    Public1aRouteTableAssociation:
         Type: AWS::EC2::SubnetRouteTableAssociation
         Properties:
             SubnetId: !Ref PublicSubnet1a
             RouteTableId: !Ref PublicRouteTable
 
-    PrivateRouteTable:
+    Public1bRouteTableAssociation:
+        Type: AWS::EC2::SubnetRouteTableAssociation
+        Properties:
+            SubnetId: !Ref PublicSubnet1b
+            RouteTableId: !Ref PublicRouteTable
+
+    PrivateRouteTable1a:
         Type: AWS::EC2::RouteTable
         Properties:
             VpcId: !Ref VPC
@@ -102,8 +176,50 @@ Resources:
                     Key: "Visibility"
                     Value: "Private"
 
+    DefaultPrivateRoute1a:
+        Type: AWS::EC2::Route
+        Properties:
+            RouteTableId: !Ref PrivateRouteTable1a
+            DestinationCidrBlock: 0.0.0.0/0
+            NatGatewayId: !Ref NATGateway1a
+
+    PrivateSubnet1aRouteTableAssociation:
+        Type: AWS::EC2::SubnetRouteTableAssociation
+        Properties:
+            RouteTableId: !Ref PrivateRouteTable1a
+            SubnetId: !Ref PrivateSubnet1a
+
+    PrivateRouteTable1b:
+        Type: AWS::EC2::RouteTable
+        Properties:
+            VpcId: !Ref VPC
+            Tags:
+                -
+                    Key: "Environment"
+                    Value: !Ref EnvironmentName
+                -
+                    Key: "Visibility"
+                    Value: "Private"
+
+    DefaultPrivateRoute1b:
+        Type: AWS::EC2::Route
+        Properties:
+            RouteTableId: !Ref PrivateRouteTable1b
+            DestinationCidrBlock: 0.0.0.0/0
+            NatGatewayId: !Ref NATGateway1b
+
+    PrivateSubnet1bRouteTableAssociation:
+        Type: AWS::EC2::SubnetRouteTableAssociation
+        Properties:
+            RouteTableId: !Ref PrivateRouteTable1b
+            SubnetId: !Ref PrivateSubnet1b
+
 Outputs:
     StackVPC:
         Value: !Ref VPC
         Export:
             Name: !Sub "${EnvironmentName}-VPCID"
+    StackPrivateSubnets:
+        Value: !Join [ ",", [ !Ref PrivateSubnet1a, !Ref PrivateSubnet1b ]]
+        Export:
+            Name: !Sub "${EnvironmentName}-PRVSUBS"
