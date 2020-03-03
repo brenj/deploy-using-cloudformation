@@ -21,3 +21,4 @@ Criteria                              |Highest Grade Possible  |Grade Recieved
 The Basics                            |Meets Specifications    |
 Load Balancer                         |Meets Specifications    |
 Auto-Scaling                          |Meets Specifications    |
+Bonus                                 |Meets Specifications    |
