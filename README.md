@@ -9,9 +9,24 @@ From Udacity:
 Supporting Courses:
 
  * Deploy Infrastructure as Code (IAC)
+ 
+Requirements
+------------
+* AWS Account
+* awscli
+
+Run Scripts
+-----------
+1. Upload [index.html](index.html) or a similar file to `udacity-devopsnd-project-2` or a similar folder in s3
+2. Run `make create-network-stack`
+3. Run `make create-server-stack`
+4. Navigate to `Udagram-DNSNAME` output URL
+
+If `make` isn't available, run the associated commands located inside [Makefile](Makefile)
 
 Screenshots
 -----------
+![AWS Diagram](screenshots/aws-diagram.png?raw=true)
 
 Grading (by Udacity)
 --------------------
