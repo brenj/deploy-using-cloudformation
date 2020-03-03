@@ -1,5 +1,5 @@
 create-network-stack:
-	aws cloudformation update-stack --stack-name network --template-body file://network.yml --parameters file://network-params.json
+	aws cloudformation create-stack --stack-name network --template-body file://network.yml --parameters file://network-params.json
 
 update-network-stack:
 	aws cloudformation update-stack --stack-name network --template-body file://network.yml --parameters file://network-params.json
