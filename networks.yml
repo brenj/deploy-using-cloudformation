@@ -223,3 +223,11 @@ Outputs:
         Value: !Join [ ",", [ !Ref PrivateSubnet1a, !Ref PrivateSubnet1b ]]
         Export:
             Name: !Sub "${EnvironmentName}-PRVSUBS"
+    StackPublicSubnet1a:
+        Value: !Ref PublicSubnet1a
+        Export:
+            Name: !Sub "${EnvironmentName}-PUBSUB1a"
+    StackPublicSubnet1b:
+        Value: !Ref PublicSubnet1b
+        Export:
+            Name: !Sub "${EnvironmentName}-PUBSUB1b"
