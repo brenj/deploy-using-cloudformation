@@ -1,0 +1,102 @@
+Parameters:
+    EnvironmentName:
+        Type: String
+
+Resources:
+    ApacheServerSecurityGroup:
+        Type: AWS::EC2::SecurityGroup
+        Properties:
+            GroupDescription: "Security group for Udagram Apache server"
+            VpcId:
+                Fn::ImportValue:
+                    !Sub "${EnvironmentName}-VPCID"
+            SecurityGroupIngress:
+                -
+                    IpProtocol: tcp
+                    FromPort: 80
+                    ToPort: 80
+                    CidrIp: 0.0.0.0/0
+                -
+                    IpProtocol: tcp
+                    FromPort: 22
+                    ToPort: 22
+                    CidrIp: 0.0.0.0/0
+            SecurityGroupEgress:
+                -
+                    IpProtocol: tcp
+                    FromPort: 0
+                    ToPort: 65535
+                    CidrIp: 0.0.0.0/0
+
+    UdagramS3ReadOnlyManagedPolicy:
+        Type: AWS::IAM::ManagedPolicy
+        Properties:
+            PolicyDocument:
+                Version: '2012-10-17'
+                Statement:
+                    -
+                        Sid: "UdagramS3ReadOnlyAccess"
+                        Effect: "Allow"
+                        Action:
+                            - "s3:Get*"
+                            - "s3:List*"
+                        Resource: "*"
+
+    UdagramS3ReadOnlyRole:
+        Type: 'AWS::IAM::Role'
+        Properties:
+            AssumeRolePolicyDocument:
+                Version: "2012-10-17"
+                Statement:
+                    -
+                        Effect: "Allow"
+                        Principal:
+                            Service:
+                                - "ec2.amazonaws.com"
+                        Action:
+                        - 'sts:AssumeRole'
+            ManagedPolicyArns:
+                - !Ref UdagramS3ReadOnlyManagedPolicy
+
+    UdagramS3ReadOnlyInstanceProfile:
+        Type: 'AWS::IAM::InstanceProfile'
+        Properties:
+            Roles:
+                - !Ref UdagramS3ReadOnlyRole
+
+    ApacheLaunchConfig:
+        Type: AWS::AutoScaling::LaunchConfiguration
+        Properties:
+            KeyName: "udagram"
+            ImageId: "ami-005bdb005fb00e791"
+            UserData:
+                Fn::Base64: !Sub |
+                    #!/bin/bash
+                    apt-get update
+                    DEBIAN_FRONTEND=noninteractive apt-get install -y apache2 awscli
+                    systemctl start apache2.service
+                    aws s3 cp s3://udacity-devopsnd-project-2/index.html .
+                    mv index.html /var/www/html/
+            SecurityGroups:
+                -
+                    Ref: ApacheServerSecurityGroup
+            InstanceType: "t2.medium"
+            IamInstanceProfile: 
+                Ref: "UdagramS3ReadOnlyInstanceProfile"
+            BlockDeviceMappings:
+                -
+                    DeviceName: /dev/sda1
+                    Ebs:
+                        VolumeSize: 10
+
+    ApacheWebAppGroup:
+        Type: AWS::AutoScaling::AutoScalingGroup
+        Properties:
+            VPCZoneIdentifier:
+                -
+                    Fn::ImportValue:
+                        !Sub "${EnvironmentName}-PRVSUBS"
+            LaunchConfigurationName:
+                Ref: ApacheLaunchConfig
+            MinSize: '2'
+            MaxSize: '4'
