@@ -33,7 +33,7 @@ Grading (by Udacity)
 
 Criteria                              |Highest Grade Possible  |Grade Recieved
 --------------------------------------|------------------------|--------------------
-The Basics                            |Meets Specifications    |
-Load Balancer                         |Meets Specifications    |
-Auto-Scaling                          |Meets Specifications    |
-Bonus                                 |Meets Specifications    |
+The Basics                            |Meets Specifications    |Meets Specifications
+Load Balancer                         |Meets Specifications    |Meets Specifications
+Auto-Scaling                          |Meets Specifications    |Meets Specifications
+Bonus                                 |Meets Specifications    |Meets Specifications
